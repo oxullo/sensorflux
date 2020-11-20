@@ -11,14 +11,14 @@ To start the app:
 1. Install [docker-compose](https://docs.docker.com/compose/install/) on the docker host.
 1. Clone this repo on the docker host.
 1. Optionally, change the default credentials or Grafana provisioning.
-1. Run the following command from the root of the cloned repo:
+1. Run the following command from this directory:
 ```
 docker-compose up -d
 ```
 
 To stop the app:
 
-1. Run the following command from the root of the cloned repo:
+1. Run the following command from this directory:
 ```
 docker-compose down
 ```
