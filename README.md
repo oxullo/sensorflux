@@ -17,3 +17,4 @@ To set everything up, from this directory:
 - The primary development stream is on the main branch
 - Development takes place on `feature` or `fix` branches
 - Naming convention for branches is `feature/name_of_branch` and `fix/underscore_between_words`
+- You can manually test all the files with pre-commit using the command `pre-commit run --all-files` (remove the flag to only test staged files)
