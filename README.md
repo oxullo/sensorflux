@@ -5,7 +5,7 @@ Service relay for sensors to influxdb
 
 To set everything up, from this directory:
 
-1. Create a new virtual environment with `pyenv -m venv .venv`
+1. Create a new virtual environment with `python -m venv .venv`
 2. Activate the virtual environment with `source .venv/bin/activate` 
 3. Install the requirements with `pip install -r requirements_dev.txt`
 4. Install the package with `pip install -e .`
