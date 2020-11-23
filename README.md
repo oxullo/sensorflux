@@ -5,8 +5,8 @@ Service relay for sensors to influxdb
 
 To set everything up, from this directory:
 
-1. Create a new virtual environment with `pyenv virtualenv <python_version> <environment_name>`
-2. Activate the virtual environment with `source <environment_name>/bin/activate` 
+1. Create a new virtual environment with `pyenv -m venv .venv`
+2. Activate the virtual environment with `source .venv/bin/activate` 
 3. Install the requirements with `pip install -r requirements_dev.txt`
 4. Install the package with `pip install -e .`
 5. Install the git pre-commit hook with `pre-commit install`
