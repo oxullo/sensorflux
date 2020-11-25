@@ -35,7 +35,7 @@ setup(
         ]
     },
 
-    install_requires=[],
+    install_requires=['influxdb', ],
 
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
