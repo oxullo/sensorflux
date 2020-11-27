@@ -10,7 +10,6 @@ This module contains the class that communicates data to influxdb
 
 from copy import deepcopy
 from datetime import datetime
-from random import random
 
 from influxdb import InfluxDBClient
 
@@ -23,11 +22,7 @@ class DatabaseConnector:
     :param str device: name for the device tag
     :param tuple fields: name for the device tag
     """
-    def __init__(
-            self,
-            measurement='test_measurement',
-            device='test_device',
-            fields=('temp', 'atmo', 'humi')):
+    def __init__(self, measurement, device, fields):
         self.client = InfluxDBClient(
             host='localhost',
             port=8086,
@@ -90,16 +85,3 @@ class DatabaseConnector:
 
     def delete_data(self):
         self.client.delete_series(tags={'device': self.device})
-
-
-if __name__ == '__main__':
-    connector = DatabaseConnector(measurement='testing_database')
-
-    fake_data = {
-        # 'time': datetime.utcnow().isoformat(),
-        'temp': random() * 100,
-        'atmo': random() * 100,
-        'humi': random() * 100,
-    }
-
-    print(connector.write(fake_data))
