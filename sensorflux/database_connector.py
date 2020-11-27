@@ -37,6 +37,12 @@ class DatabaseConnector:
         self.measurement = measurement
         self.device = device
         self.fields = fields
+        self._create_database('sensorflux')
+
+    def _create_database(self, db_name):
+        db_list = (el['name'] for el in self.client.get_list_database())
+        if db_name not in db_list:
+            self.client.create_database(db_name)
 
     def check_data(self, data):
         """
