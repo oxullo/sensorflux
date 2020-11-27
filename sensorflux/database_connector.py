@@ -21,8 +21,13 @@ class DatabaseConnector:
 
     :param str measurement: measurement name
     :param str device: name for the device tag
+    :param tuple fields: name for the device tag
     """
-    def __init__(self, measurement='test_measurement', device='test_device'):
+    def __init__(
+            self,
+            measurement='test_measurement',
+            device='test_device',
+            fields=('temp', 'atmo', 'humi')):
         self.client = InfluxDBClient(
             host='localhost',
             port=8086,
@@ -31,9 +36,9 @@ class DatabaseConnector:
             database='sensorflux')
         self.measurement = measurement
         self.device = device
+        self.fields = fields
 
-    @staticmethod
-    def check_data(data):
+    def check_data(self, data):
         """
         Checks that the data is in a valid format. Returns true if yes
 
@@ -41,7 +46,7 @@ class DatabaseConnector:
         :rtype: bool
         """
         right_type = isinstance(data, dict)
-        has_data = any(key in data for key in ('temp', 'atmo', 'humi'))
+        has_data = any(key in data for key in self.fields)
         return right_type and has_data
 
     def clean_point(self, data):
