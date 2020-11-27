@@ -88,6 +88,9 @@ class DatabaseConnector:
         successful = self.client.write_points([point])
         return successful
 
+    def delete_data(self):
+        self.client.delete_series(tags={'device': self.device})
+
 
 if __name__ == '__main__':
     connector = DatabaseConnector(measurement='testing_database')
