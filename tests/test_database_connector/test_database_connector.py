@@ -19,7 +19,7 @@ def test_database_connector():
     """
     GIVEN the DatabaseConnector class
     WHEN you instantiate it
-    THEN it returns a valid InfluxDBClient object
+    THEN it should return a valid InfluxDBClient object
     """
     params_gen = client_params()
     measurement, device = next(params_gen)

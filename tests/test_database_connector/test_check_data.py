@@ -8,9 +8,9 @@ from sensorflux.database_connector import DatabaseConnector
 
 def test_check_data():
     """
-    GIVEN data as a parameter to be sent to influxdb
-    WHEN the data is not valid
-    THEN it should return false
+    GIVEN data to be sent to influxdb
+    WHEN the method is called with data as an argument
+    THEN it should only return True if the data is valid
     """
     connector = DatabaseConnector()
 
