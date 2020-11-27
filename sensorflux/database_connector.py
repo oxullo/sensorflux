@@ -5,7 +5,7 @@
 sensorflux.database_connector
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This module contains the class that communicates data to influxdb
+This module contains the class that communicates data to influxdb.
 """
 
 from copy import deepcopy
@@ -16,11 +16,11 @@ from influxdb import InfluxDBClient
 
 class DatabaseConnector:
     """
-    A class to represent a client connection to the influxdb instance
+    A class to represent a client connection to the influxdb instance.
 
-    :param str measurement: measurement name
-    :param str device: name for the device tag
-    :param tuple fields: name for the device tag
+    :param str measurement: measurement name.
+    :param str device: name for the device tag.
+    :param tuple fields: names of the fields containing the data to be sent.
     """
     def __init__(self, measurement, device, fields):
         self.client = InfluxDBClient(
@@ -41,9 +41,9 @@ class DatabaseConnector:
 
     def check_data(self, data):
         """
-        Checks that the data is in a valid format. Returns true if yes
+        Checks that the data is in a valid format. Returns true if yes.
 
-        :param dict data: measurement data
+        :param dict data: measurement data.
         :rtype: bool
         """
         right_type = isinstance(data, dict)
@@ -52,9 +52,9 @@ class DatabaseConnector:
 
     def clean_point(self, data):
         """
-        Formats the data in the right format for influxdb
+        Formats the data in the right format for influxdb.
 
-        :param dict data: measurement data
+        :param dict data: measurement data.
         :rtype: dict
         """
         data_copy = deepcopy(data)
@@ -71,11 +71,11 @@ class DatabaseConnector:
 
     def write(self, data):
         r"""
-        Sends data to influxdb. Returns true if successful
+        Sends data to influxdb. Returns true if successful.
 
         :param dict data: measurement data as a dict optionally
             containing a timestamp in ISO 8601 format, and containing
-            any of 'temp', 'atmo' or 'humi' values
+            any of 'temp', 'atmo' or 'humi' values.
         :rtype: bool
         """
         assert self.check_data(data), 'wrong data format'
