@@ -27,13 +27,13 @@ def test_check_data(connector):
         'time': datetime.utcnow().isoformat(),
         'temp': 123,
         'atmo': 456,
-        'humi': 789}) is True
+        'humi': 789})
     assert connector.check_data({
         'time': datetime.utcnow().isoformat(),
-        'humi': 789}) is True
-    assert connector.check_data({'temp': 123, 'atmo': 789}) is True
-    assert connector.check_data({}) is False
-    assert connector.check_data(
-        (datetime.utcnow().isoformat(), 123, 456)) is False
-    assert connector.check_data(
-        [datetime.utcnow().isoformat(), 987, 654]) is False
+        'humi': 789})
+    assert connector.check_data({'temp': 123, 'atmo': 789})
+    assert not connector.check_data({})
+    assert not connector.check_data(
+        (datetime.utcnow().isoformat(), 123, 456))
+    assert not connector.check_data(
+        [datetime.utcnow().isoformat(), 987, 654])
