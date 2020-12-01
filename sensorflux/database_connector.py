@@ -8,7 +8,6 @@ sensorflux.database_connector
 This module contains the class that communicates data to influxdb.
 """
 
-from copy import deepcopy
 from datetime import datetime
 
 from influxdb import InfluxDBClient
@@ -79,16 +78,16 @@ class DatabaseConnector:
         :param dict data: measurement data.
         :rtype: dict
         """
-        data_copy = deepcopy(data)
-        time = data_copy.pop('time') if 'time' in data_copy \
+        time = data['time'] if 'time' in data \
             else datetime.utcnow().isoformat()
+        fields = {key: value for key, value in data.items() if key != 'time'}
         return {
             'measurement': self.measurement,
             'tags': {
                 'device': self.device
             },
             'time': time,
-            'fields': data_copy
+            'fields': fields
         }
 
     def write(self, data):
