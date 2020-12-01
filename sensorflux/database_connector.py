@@ -99,7 +99,8 @@ class DatabaseConnector:
             any of 'temp', 'atmo' or 'humi' values.
         :rtype: bool
         """
-        assert self.check_data(data), 'wrong data format'
+        if not self.check_data(data):
+            return False
         point = self.data_to_point(data)
         successful = self.client.write_points([point])
         return successful
