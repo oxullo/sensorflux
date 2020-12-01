@@ -22,22 +22,44 @@ class DatabaseConnector:
     :param str device: name for the device tag.
     :param tuple fields: names of the fields containing the data to be sent.
     """
-    def __init__(self, measurement, device, fields):
-        self.client = InfluxDBClient(
-            host='localhost',
-            port=8086,
-            username='admin',
-            password='admin',
-            database='sensorflux')
-        self.measurement = measurement
-        self.device = device
-        self.fields = fields
-        self._create_database('sensorflux')
+    host = 'localhost'
+    port = 8086
+    username = 'admin'
+    password = 'admin'
+    database_name = 'sensorflux'
 
-    def _create_database(self, db_name):
+    def __init__(self, measurement, device, fields):
+        self._client = InfluxDBClient(
+            host=self.host,
+            port=self.port,
+            username=self.username,
+            password=self.password,
+            database=self.database_name)
+        self._measurement = measurement
+        self._device = device
+        self._fields = fields
+        self._ensure_database()
+
+    @property
+    def client(self):
+        return self._client
+
+    @property
+    def measurement(self):
+        return self._measurement
+
+    @property
+    def device(self):
+        return self._device
+
+    @property
+    def fields(self):
+        return self._fields
+
+    def _ensure_database(self):
         db_list = (el['name'] for el in self.client.get_list_database())
-        if db_name not in db_list:
-            self.client.create_database(db_name)
+        if self.database_name not in db_list:
+            self.client.create_database(self.database_name)
 
     def check_data(self, data):
         """
@@ -50,7 +72,7 @@ class DatabaseConnector:
         has_data = any(key in data for key in self.fields)
         return right_type and has_data
 
-    def clean_point(self, data):
+    def data_to_point(self, data):
         """
         Formats the data in the right format for influxdb.
 
@@ -79,7 +101,7 @@ class DatabaseConnector:
         :rtype: bool
         """
         assert self.check_data(data), 'wrong data format'
-        point = self.clean_point(data)
+        point = self.data_to_point(data)
         successful = self.client.write_points([point])
         return successful
 
