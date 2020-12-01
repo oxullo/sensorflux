@@ -41,4 +41,6 @@ def test_write_to_database():
     connector = next(params_gen)
     data = {field: random() * 100 for field in connector.fields}
     assert connector.write(data)
+    wrong_data = {field: random() * 100 for field in (222, 333, 444)}
+    assert not connector.write(wrong_data)
     next(params_gen)
