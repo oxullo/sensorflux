@@ -11,8 +11,12 @@ from sensorflux.database_connector import DatabaseConnector
 def client_params():
     measurement = f'measurement_{str(random())[2:]}'
     device = f'device_{str(random())[2:]}'
-    client_connection = (yield measurement, device)
-    yield client_connection.client.drop_measurement(measurement)
+    connector_instance = DatabaseConnector(
+        measurement=measurement,
+        device=device,
+        fields=(666, 777, 888))
+    yield connector_instance
+    yield connector_instance.client.drop_measurement(measurement)
 
 
 def test_database_connector():
@@ -22,13 +26,9 @@ def test_database_connector():
     THEN it should return a valid InfluxDBClient object
     """
     params_gen = client_params()
-    measurement, device = next(params_gen)
-    connector = DatabaseConnector(
-        measurement=measurement,
-        device=device,
-        fields=(666, 777, 888))
+    connector = next(params_gen)
     assert isinstance(connector.client, client.InfluxDBClient)
-    params_gen.send(connector)
+    next(params_gen)
 
 
 def test_write_to_database():
@@ -38,12 +38,7 @@ def test_write_to_database():
     THEN it should return True
     """
     params_gen = client_params()
-    measurement, device = next(params_gen)
-    fields = (666, 777, 888)
-    connector = DatabaseConnector(
-        measurement=measurement,
-        device=device,
-        fields=fields)
-    data = {field: random() * 100 for field in fields}
-    assert connector.write(data) is True
-    params_gen.send(connector)
+    connector = next(params_gen)
+    data = {field: random() * 100 for field in connector.fields}
+    assert connector.write(data)
+    next(params_gen)
