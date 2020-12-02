@@ -18,10 +18,11 @@ class PollingInterface:
 
     @period.setter
     def period(self, value):
-        if isinstance(value, int) and value >= 0:
-            self._period = value
-        else:
-            raise ValueError('Value should be a positive integer.')
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError('Period should be an integer.')
+        if value < 0:
+            raise ValueError('Period should be positive.')
+        self._period = value
 
     @property
     def running(self):
