@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 from random import random
 import sys
 
@@ -15,14 +16,30 @@ class FakeData:
     def read(self):
         return {field: random() * 100 for field in self._fields}
 
+    async def async_read(self):
+        await asyncio.sleep(random() * 3)
+        return self.read()
+
+
+async def poller_manager(*instances):
+    pollers = [PollingInterface(*instance) for instance in instances]
+    tasks = [poller.run() for poller in pollers]
+    await asyncio.gather(*tasks)
+
 
 def run():
     fields = ('temp', 'atmo', 'humi')
     fake_client = FakeData(fields)
-    db_client = DatabaseConnector('test_measurement', 'test_device', fields)
-    poller = PollingInterface(fake_client, db_client, 5)
+    db_client = DatabaseConnector(
+        'test_measurement', 'test_device', fields)
+    db_client_2 = DatabaseConnector(
+        'test_measurement_2', 'test_device_2', fields)
+    pollers_config = (
+        (fake_client, db_client, 5),
+        (fake_client, db_client_2, 3))
+
     try:
-        poller.run()
+        asyncio.run(poller_manager(*pollers_config))
     except KeyboardInterrupt:
         print('shutting down')
         return 0
