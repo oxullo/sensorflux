@@ -35,7 +35,7 @@ setup(
         ]
     },
 
-    install_requires=['influxdb'],
+    install_requires=['click', 'influxdb'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
 
