@@ -7,59 +7,49 @@ arduino.connector
 This module contains the class that receives sensor values from Arduino.
 """
 
-import serial
-import asyncio
 import re
 from datetime import datetime
-import random
+import serial_asyncio
 
 
 class ArduinoConnector:
-    def __init__(self, serial_port, baudrate, sample_rate):
+    DEFAULT_BAUDRATE = 9600
+
+    def __init__(self, serial_port, baudrate=None):
         self.serial_port = serial_port
-        self.baudrate = baudrate
-        self.sample_rate = sample_rate
+        self.baudrate = self.DEFAULT_BAUDRATE if baudrate is None else baudrate
         self.arduino_connection = True
+        self.reader = None
 
-    def start_ardunio_connect(self):
-        try:
-            self.ser = serial.Serial(self.serial_port, self.baudrate)
-        except serial.SerialException:
-            self.arduino_connection = False
+    async def start(self):
+        self.reader, _ = await serial_asyncio.open_serial_connection(
+            url=self.serial_port,
+            baudrate=self.baudrate)
 
-    async def arduino_read(self):
-        arduino_data = str(self.ser.readline())
+    async def read(self):
+        assert self.reader, "Arduino connector must be started first"
+        arduino_data = str(await self.reader.readline())
         print(f'Arduino data {arduino_data}')
         arduino_data = re.findall(r'\d+', arduino_data)
         print(f'Arduino data findall {arduino_data}')
         sensor_values = {'time': 0, 'temp': 0, 'atmo': 0, 'humi': 0}
         if len(arduino_data) == 3:
-            sensor_values['time'], sensor_values['temp'],
-            sensor_values['atmo'],
-            sensor_values['humi'] = datetime.utcnow().isoformat(),
-            arduino_data[0], arduino_data[1], arduino_data[2]
-        await asyncio.sleep(self.sample_rate)
-#        print(f'are we getting here? {sensor_values}')
+            sensor_values['time'] = datetime.utcnow().isoformat()
+            sensor_values['temp'] = arduino_data[0]
+            sensor_values['atmo'] = arduino_data[1]
+            sensor_values['humi'] = arduino_data[2]
         return sensor_values
 
-    async def backup_vaule_gen(self):
-        temp = random.randint(1, 255)
-        atmo = random.randint(1, 255)
-        humi = random.randint(1, 255)
-        time = datetime.utcnow().isoformat()
-        await asyncio.sleep(self.sample_rate)
-        return [time, temp, atmo, humi]
 
-    async def task1(self, value_send_out):
-        while True:
-            if self.arduino_connection:
-                sensor_values = await self.arduino_read()
-#               print(f'Task1 sensor {sensor_values}')
-                value_send_out(sensor_values)
-            else:
-                sensor_values = await self.backup_vaule_gen()
-                value_send_out(sensor_values)
+if __name__ == '__main__':
 
-    # async def main(self):
-    #     test = asyncio.create_task(self.task1())
-    #     await asyncio.sleep(1)
+    import asyncio
+
+    async def main(arduino_connection):
+        await arduino_connection.start()
+        result = await arduino_connection.read()
+        return result
+
+    arduino_connector = ArduinoConnector('/dev/cu.usbmodem145101', 9600)
+    results = asyncio.run(main(arduino_connector))
+    print(f'This is read {results}')
