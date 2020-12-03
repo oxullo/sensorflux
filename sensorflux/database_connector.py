@@ -9,8 +9,11 @@ This module contains the class that communicates data to influxdb.
 """
 
 from datetime import datetime
+import logging
 
 from influxdb import InfluxDBClient
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseConnector:
@@ -38,6 +41,8 @@ class DatabaseConnector:
         self._device = device
         self._fields = fields
         self._ensure_database()
+        logger.info(f'Instance of DatabaseConnector created for device: '
+                    f'{self.device} at: {self.host}:{self.port}')
 
     @property
     def client(self):
@@ -58,6 +63,7 @@ class DatabaseConnector:
     def _ensure_database(self):
         db_list = (el['name'] for el in self.client.get_list_database())
         if self.database_name not in db_list:
+            logger.info(f'Creating new database named: {self.database_name}')
             self.client.create_database(self.database_name)
 
     def check_data(self, data):
@@ -69,7 +75,10 @@ class DatabaseConnector:
         """
         right_type = isinstance(data, dict)
         has_data = any(key in data for key in self.fields)
-        return right_type and has_data
+        is_valid = right_type and has_data
+        if not is_valid:
+            logger.warning(f'The data is not in a valid format: {data}')
+        return is_valid
 
     def data_to_point(self, data):
         """
@@ -103,7 +112,12 @@ class DatabaseConnector:
             return False
         point = self.data_to_point(data)
         successful = self.client.write_points([point])
+        if successful:
+            logger.debug('Successfully sent data')
+        else:
+            logger.warning('Data could not be sent')
         return successful
 
     def delete_data(self):
         self.client.delete_series(tags={'device': self.device})
+        logger.info(f'Deleted data for device: {self.device}')
