@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import logging.config
 import sys
 
 import click
@@ -13,10 +14,20 @@ LOG_FORMAT = ('%(asctime)-15s [%(levelname)-7s]: '
 
 @click.command()
 @click.option('--debug/--no-debug', default=False)
-def run(debug):
+@click.option('--logging-config')
+def run(debug, logging_config):
     logging.basicConfig(
         format=LOG_FORMAT,
         level=logging.DEBUG if debug else logging.INFO)
+    if logging_config:
+        try:
+            logging.config.fileConfig(
+                fname=logging_config,
+                disable_existing_loggers=False)
+        except (KeyError, ValueError, TypeError,
+                AttributeError, ImportError) as e:
+            logger.info(f'Error with the logging config file: {e}')
+
     logger.debug('debug')
     logger.info('info')
     print('foobar')
