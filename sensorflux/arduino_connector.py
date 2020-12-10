@@ -7,14 +7,24 @@ arduino.connector
 This module contains the class that receives sensor values from Arduino.
 """
 
-import re
 import random
 from datetime import datetime
+import logging
 
 import serial_asyncio
 
+logger = logging.getLogger(__name__)
 
-class ArduinoConnector:
+
+class ArduinoConnectorBase:
+    async def start(self):
+        pass
+
+    async def poll(self):
+        pass
+
+
+class ArduinoConnector(ArduinoConnectorBase):
     DEFAULT_BAUDRATE = 9600
 
     def __init__(self, serial_port, baudrate=None):
@@ -22,30 +32,49 @@ class ArduinoConnector:
         self.baudrate = self.DEFAULT_BAUDRATE if baudrate is None else baudrate
         self.arduino_connection = True
         self.reader = None
+        self.writer = None
 
     async def start(self):
-        self.reader, _ = await serial_asyncio.open_serial_connection(
+        self.reader, self.writer = await serial_asyncio.open_serial_connection(
             url=self.serial_port,
             baudrate=self.baudrate)
 
-    async def read(self):
-        assert self.reader, "Arduino connector must be started first"
-        arduino_data = str(await self.reader.readline())
-        print(f'Arduino data {arduino_data}')
-        arduino_data = re.findall(r'\d+', arduino_data)
-        print(f'Arduino data findall {arduino_data}')
-        sensor_values = {'time': 0, 'temp': 0, 'atmo': 0, 'humi': 0}
-        if len(arduino_data) == 3:
+    async def poll(self):
+
+        assert self.reader and self.writer, 'Arduino connector must be ' \
+                                            'started first'
+
+        self.writer.write(b'A')
+        await self.writer.drain()
+        try:
+            incoming_bytes = (await asyncio.wait_for(self.reader.readline(),
+                                                     timeout=2.0))
+        except asyncio.TimeoutError:
+            logger.warning('Arduino didn\'t reply')
+            return None
+
+        logger.debug(f'Arduino data {incoming_bytes}')
+        list_of_strings = incoming_bytes.decode().split('\t')
+        try:
+            list_of_floats = [float(i) for i in list_of_strings]
+        except ValueError:
+            logger.warning('Converting strings into floats failed')
+            return None
+
+        sensor_values = {'time': 0, 'temp': 0, 'atmo': 0, 'height': 0}
+        if len(list_of_floats) == 3:
             sensor_values['time'] = datetime.utcnow().isoformat()
-            sensor_values['temp'] = arduino_data[0]
-            sensor_values['atmo'] = arduino_data[1]
-            sensor_values['humi'] = arduino_data[2]
-        return sensor_values
+            sensor_values['temp'] = list_of_floats[0]
+            sensor_values['atmo'] = list_of_floats[1]
+            sensor_values['height'] = list_of_floats[2]
+            logger.debug(f'Here are your sensor values {sensor_values}')
+            return sensor_values
+        else:
+            logger.warning('Wrong amount of values')
+            return None
 
 
-class ArduinoMockConnector:
-    def __init__(self):
-        pass
+class ArduinoMockConnector(ArduinoConnectorBase):
 
     async def poll(self):
         return {'time': datetime.utcnow().isoformat(),
@@ -59,7 +88,8 @@ if __name__ == '__main__':
     import asyncio
 
     async def main():
-        mock = ArduinoMockConnector()
+        mock = ArduinoConnector('/dev/cu.usbmodem146101')
+        await mock.start()
         while True:
             print(await mock.poll())
             await asyncio.sleep(1)
