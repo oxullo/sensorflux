@@ -8,7 +8,9 @@ This module contains the class that receives sensor values from Arduino.
 """
 
 import re
+import random
 from datetime import datetime
+
 import serial_asyncio
 
 
@@ -41,15 +43,25 @@ class ArduinoConnector:
         return sensor_values
 
 
+class ArduinoMockConnector:
+    def __init__(self):
+        pass
+
+    async def poll(self):
+        return {'time': datetime.utcnow().isoformat(),
+                'temp': float(random.randrange(-20, 40)),
+                'atmo': float(random.randrange(930, 1300)),
+                'humi': float(random.randrange(0, 100))}
+
+
 if __name__ == '__main__':
 
     import asyncio
 
-    async def main(arduino_connection):
-        await arduino_connection.start()
-        result = await arduino_connection.read()
-        return result
+    async def main():
+        mock = ArduinoMockConnector()
+        while True:
+            print(await mock.poll())
+            await asyncio.sleep(1)
 
-    arduino_connector = ArduinoConnector('/dev/cu.usbmodem145101', 9600)
-    results = asyncio.run(main(arduino_connector))
-    print(f'This is read {results}')
+    asyncio.run(main())
