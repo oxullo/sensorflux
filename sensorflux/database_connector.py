@@ -10,7 +10,8 @@ This module contains the class that communicates data to influxdb.
 
 from datetime import datetime
 
-from influxdb import InfluxDBClient
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import ASYNCHRONOUS
 
 
 class DatabaseConnector:
@@ -23,17 +24,16 @@ class DatabaseConnector:
     """
     host = 'localhost'
     port = 8086
-    username = 'admin'
-    password = 'admin'
-    database_name = 'sensorflux'
+    bucket = 'sensorflux'
+    token = 'admin'
+    org = 'admin'
 
     def __init__(self, measurement, device, fields):
         self._client = InfluxDBClient(
-            host=self.host,
-            port=self.port,
-            username=self.username,
-            password=self.password,
-            database=self.database_name)
+            url=f'http://{self.host}:{self.port}',
+            token=self.token,
+            org=self.org)
+        self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
         self._measurement = measurement
         self._device = device
         self._fields = fields
@@ -86,15 +86,14 @@ class DatabaseConnector:
 
     def write(self, data):
         r"""
-        Sends data to influxdb. Returns true if successful.
+        Sends data to influxdb.
 
         :param dict data: measurement data as a dict optionally
             containing a timestamp in ISO 8601 format, and containing
             any of 'temp', 'atmo' or 'humi' values.
-        :rtype: bool
         """
         if not self.check_data(data):
             return False
         point = self.data_to_point(data)
-        successful = self.client.write_points([point])
-        return successful
+        result = self.write_api.write(bucket=self.bucket, record=point)
+        result.get()
