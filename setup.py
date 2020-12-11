@@ -35,7 +35,7 @@ setup(
         ]
     },
 
-    install_requires=['influxdb', 'pyserial-asyncio'],
+    install_requires=['influxdb-client', 'pyserial-asyncio'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
 
