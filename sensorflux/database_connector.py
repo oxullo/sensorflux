@@ -37,7 +37,6 @@ class DatabaseConnector:
         self._measurement = measurement
         self._device = device
         self._fields = fields
-        self._ensure_database()
 
     @property
     def client(self):
@@ -54,11 +53,6 @@ class DatabaseConnector:
     @property
     def fields(self):
         return self._fields
-
-    def _ensure_database(self):
-        db_list = (el['name'] for el in self.client.get_list_database())
-        if self.database_name not in db_list:
-            self.client.create_database(self.database_name)
 
     def check_data(self, data):
         """
@@ -104,6 +98,3 @@ class DatabaseConnector:
         point = self.data_to_point(data)
         successful = self.client.write_points([point])
         return successful
-
-    def delete_data(self):
-        self.client.delete_series(tags={'device': self.device})
