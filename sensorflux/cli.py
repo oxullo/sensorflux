@@ -2,27 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from random import random
 import sys
 
 from sensorflux.arduino_connector import ArduinoConnector, ArduinoMockConnector
 from sensorflux.database_connector import DatabaseConnector
 from sensorflux.polling_interface import PollingInterface
-
-
-class FakeData:
-    def __init__(self, fields):
-        self._fields = fields
-
-    async def start(self):
-        pass
-
-    def read(self):
-        return {field: random() * 100 for field in self._fields}
-
-    async def poll(self):
-        await asyncio.sleep(random() * 3)
-        return self.read()
 
 
 async def poller_manager(*instances):
