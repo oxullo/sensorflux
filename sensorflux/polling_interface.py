@@ -39,7 +39,7 @@ class PollingInterface:
     async def poll(self):
         start_time = datetime.now()
         print(f'polling now at: {start_time.isoformat()}')
-        data = await self._arduino_client.async_read()
+        data = await self._arduino_client.poll()
         self._influxdb_client.write(data)
         await asyncio.sleep(max(
             0,
