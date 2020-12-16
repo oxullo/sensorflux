@@ -9,11 +9,17 @@ from sensorflux.database_connector import DatabaseConnector
 from sensorflux.polling_interface import PollingInterface
 
 
+async def stop_after(client, time):
+    await asyncio.sleep(time)
+    client.stop()
+
+
 async def poller_manager(*instances):
     pollers = [PollingInterface(*instance) for instance in instances]
     tasks = [poller.run() for poller in pollers]
-    start_arduinos = [instance[0].start() for instance in instances]
-    await asyncio.gather(*start_arduinos, *tasks)
+    starts = [instance[0].start() for instance in instances]
+    stops = [stop_after(poller, 12) for poller in pollers]
+    return await asyncio.gather(*starts, *tasks, *stops)
 
 
 def run():
@@ -29,13 +35,13 @@ def run():
         (arduino_mock, db_client_2, 3))
 
     try:
-        asyncio.run(poller_manager(*pollers_config))
+        return_values = asyncio.run(poller_manager(*pollers_config))
+        return sum(val for val in return_values if isinstance(val, int))
     except KeyboardInterrupt:
         print('shutting down')
         return 0
     except AttributeError as e:
         print(e)
-    return 1
 
 
 if __name__ == '__main__':
